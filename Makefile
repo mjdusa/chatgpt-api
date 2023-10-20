@@ -3,7 +3,7 @@ BRANCH:=$(shell git rev-parse --abbrev-ref HEAD)
 COMMIT:=$(shell git log --pretty=format:'%H' -n 1)
 BUILD_TS:=$(shell date -u "+%Y-%m-%dT%TZ")
 BUILD_DIR:=dist
-APP_NAME:=example
+APP_NAME:=chatgpt-api
 #APP_VERSION:=$(shell git describe --tags)
 APP_VERSION:=$(shell cat .version)
 GO_VERSION:=$(shell go version | sed -r 's/go version go(.*)\ .*/\1/')
@@ -90,7 +90,7 @@ racetest:
 test: unittest racetest
 
 .PHONY: build
-build: prebuild lint test
+build: prebuild
 	$(GOCMD) build $(GOFLAGS) -ldflags="$(LDFLAGS)" -o $(BUILD_DIR)/$(APP_NAME) cmd/$(APP_NAME)/main.go
 
 .PHONY: debug
@@ -99,6 +99,9 @@ debug: clean build
 
 .PHONY: release
 release: clean build
+
+.PHONY: all
+all: clean lint test build debug release
 
 .PHONY: pre-commit
 pre-commit: init
@@ -109,6 +112,7 @@ usage:
 	@echo "usage:"
 	@echo "  make [command]"
 	@echo "available commands:"
+	@echo "  all - clean lint test build debug release"
 	@echo "  clean - clean up build artifacts"
 	@echo "  debug - build debug version of binary"
 	@echo "  help - show usage"

@@ -42,18 +42,20 @@ func Exit(code int) {
 	os.Exit(code)
 }
 
-func GetParameters() (string, string, bool, bool) {
+func GetParameters() (string, string, string, bool, bool) {
 	flagSet := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
 	flagSet.SetOutput(os.Stderr)
 
 	var auth string
+	var org string
 	var logFileName string
 	var dbg bool
 	var verbose bool
 
 	// add flags
-	flagSet.StringVar(&auth, "auth", "", "GitHub Auth Token")
+	flagSet.StringVar(&auth, "auth", "", "OpenAI Auth Token")
+	flagSet.StringVar(&org, "org", "", "OpenAI Org Token")
 	flagSet.StringVar(&logFileName, "log", "ChatGPT.log", "Log File Name")
 	flagSet.BoolVar(&dbg, "debug", false, "Log Debug")
 	flagSet.BoolVar(&verbose, "verbose", false, "Show Verbose Logging")
@@ -80,7 +82,7 @@ func GetParameters() (string, string, bool, bool) {
 		}
 	}
 
-	return auth, logFileName, dbg, verbose
+	return auth, org, logFileName, verbose, dbg
 }
 
 type PostRequestBody struct {
@@ -90,20 +92,40 @@ type PostRequestBody struct {
 	Temperature float64 `json:"temperature"`
 }
 
+type Message struct {
+	Content      *string `json:"content"`
+	FunctionCall string  `json:"function_call"`
+	Role         string  `json:"role"`
+}
+
 type Choices struct {
-	Text string `json:"text"`
+	FinishReason string  `json:"finish_reason"`
+	Index        float64 `json:"index"`
+	Message      Message `json:"message"`
+}
+
+type Usage struct {
+	CompletionTokens int64 `json:"completion_tokens"`
+	PromptTokens     int64 `json:"prompt_tokens"`
+	TotalTokens      int64 `json:"total_tokens"`
 }
 
 type PostResponseBody struct {
+	Id      string    `json:"id"`
 	Choices []Choices `json:"choices"`
+	Created int64     `json:"created"`
+	Model   string    `json:"model"`
+	Object  string    `json:"object"`
+	Usage   Usage     `json:"usage"`
 }
 
 func Run() int {
 	ctx := context.Background()
-	auth, logFileName, _, _ := GetParameters()
+	auth, org, logFileName, verbose, dbg := GetParameters()
 
 	logFile, err := os.OpenFile(logFileName, DefaultFileAccess, DefaultFileMode)
 	if err != nil {
+		fmt.Printf("error: %v\n", err)
 		log.Fatal(err)
 	}
 
@@ -111,22 +133,23 @@ func Run() int {
 
 	for {
 		pmt := prompt("Ask: ")
-
 		if pmt == "" {
 			break
 		}
 
 		logger.Printf("Ask: %s", pmt)
 
-		choices, err := ask(ctx, auth, pmt)
+		choices, err := ask(ctx, auth, org, pmt, verbose, dbg)
 		if err != nil {
+			fmt.Printf("error: %v\n", err)
 			logger.Fatalf("error: %v", err)
+			continue
 		}
 
 		fmt.Println("ChatGPT:")
 		for idx, choice := range *choices {
-			fmt.Printf("[%d]: %s", idx, choice.Text)
-			logger.Printf(choice.Text)
+			fmt.Printf("[%d]: %v\n", idx, choice.Message.Content)
+			logger.Printf("[%d]: %v", idx, choice.Message.Content)
 		}
 	}
 
@@ -146,10 +169,14 @@ func prompt(text string) string {
 	return strings.TrimSpace(str)
 }
 
-func ask(ctx context.Context, auth string, prompt string) (*[]Choices, error) {
+func ask(ctx context.Context, auth string, org string, prompt string, verbose bool, dbg bool) (*[]Choices, error) {
 	opts := []ghc.ClientOption{
 		ghc.WithDefaultHeaders(),
 		ghc.WithTimeout(DefaultTimeout),
+	}
+
+	if dbg {
+		fmt.Printf("ClientOption: %+v\n", opts)
 	}
 
 	client := ghc.New(DefaultBaseURL, opts...)
@@ -159,6 +186,10 @@ func ask(ctx context.Context, auth string, prompt string) (*[]Choices, error) {
 		Model:       DefaultModel,
 		MaxTokens:   DefaultMaxTokens,
 		Temperature: DefaultTemperature,
+	}
+
+	if dbg {
+		fmt.Printf("postRequestBody: %+v\n", postRequestBody)
 	}
 
 	requestBody, err := json.Marshal(postRequestBody)
@@ -173,6 +204,14 @@ func ask(ctx context.Context, auth string, prompt string) (*[]Choices, error) {
 		ghc.WithHeader(HTTPHeaderAuthorization, fmt.Sprintf("Bearer %s", auth)),
 	}
 
+	if len(org) > 0 {
+		reqOpts = append(reqOpts, ghc.WithHeader("OpenAI-Organization", org))
+	}
+
+	if dbg {
+		fmt.Printf("[]Option: %+v\n", reqOpts)
+	}
+
 	response, err := client.Post(ctx, "/v1/completions", reqOpts...)
 	if err != nil {
 		return nil, err
@@ -181,6 +220,18 @@ func ask(ctx context.Context, auth string, prompt string) (*[]Choices, error) {
 	var postResponseBody PostResponseBody
 	if err := response.Unmarshal(&postResponseBody); err != nil {
 		return nil, err
+	}
+
+	if dbg {
+		fmt.Printf("postResponseBody: %+v\n", postResponseBody)
+	}
+
+	if !response.Ok() {
+		if dbg {
+			fmt.Printf("Response: %+v\n", response)
+		}
+
+		return nil, fmt.Errorf("error - HTTP Response Status Code: %s", response.Get().Status)
 	}
 
 	return &postResponseBody.Choices, nil
