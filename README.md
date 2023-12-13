@@ -4,14 +4,6 @@
 
 * TODO: Description of project goes here.
 
-
-## Customizing Template after coping
-
-* TODO: Replace 'mdonahue-godaddy' with your github org
-* TODO: Replace 'chatgpt-api' with your app name
-* TODO: Rename the cmd/chatgpt-api directory to your app name
-
-
 ## Contributing
 
 Please see our [Contributing](./CONTRIBUTING.md) for how to contribute to the project.
