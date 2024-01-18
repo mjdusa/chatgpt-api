@@ -13,7 +13,7 @@ import (
 	"time"
 
 	ghc "github.com/bozd4g/go-http-client"
-	"github.com/mdonahue-godaddy/chatgpt-api/internal/version"
+	"github.com/mjdusa/chatgpt-api/internal/version"
 )
 
 const (

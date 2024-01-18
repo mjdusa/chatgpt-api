@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/mdonahue-godaddy/chatgpt-api/internal/runner"
+	"github.com/mjdusa/chatgpt-api/internal/runner"
 )
 
 func main() {

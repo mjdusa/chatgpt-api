@@ -1,4 +1,4 @@
-module github.com/mdonahue-godaddy/chatgpt-api
+module github.com/mjdusa/chatgpt-api
 
 go 1.21.3
 

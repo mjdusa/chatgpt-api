@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mdonahue-godaddy/chatgpt-api/internal/version"
+	"github.com/mjdusa/chatgpt-api/internal/version"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )

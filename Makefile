@@ -1,4 +1,4 @@
-GIT_REPO:=github.com/mdonahue-godaddy/chatgpt-api
+GIT_REPO:=github.com/mjdusa/chatgpt-api
 BRANCH:=$(shell git rev-parse --abbrev-ref HEAD)
 COMMIT:=$(shell git log --pretty=format:'%H' -n 1)
 BUILD_TS:=$(shell date -u "+%Y-%m-%dT%TZ")
