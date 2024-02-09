@@ -31,17 +31,6 @@ const (
 	HTTPHeaderAuthorization string        = "Authorization"
 )
 
-var panicOnExit = false // Set to true to tell Exit() to Panic rather than
-// call os.Exit() - should ONLY be used for testing
-
-func Exit(code int) {
-	if panicOnExit {
-		panic(fmt.Sprintf("PanicOnExit is true, code=%d", code))
-	}
-
-	os.Exit(code)
-}
-
 func GetParameters() (string, string, string, bool, bool) {
 	flagSet := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
@@ -63,15 +52,15 @@ func GetParameters() (string, string, string, bool, bool) {
 	// Parse the flags
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		flagSet.Usage()
-		Exit(OsExistCode)
+		panic(err)
 	}
 
 	if len(auth) == 0 {
 		flagSet.Usage()
-		Exit(OsExistCode)
+		panic(fmt.Errorf("error: missing required parameter -auth"))
 	}
 
-	if verbose {
+	if verbose || dbg {
 		fmt.Println(version.GetVersion())
 	}
 
@@ -111,7 +100,7 @@ type Usage struct {
 }
 
 type PostResponseBody struct {
-	Id      string    `json:"id"`
+	ID      string    `json:"id"`
 	Choices []Choices `json:"choices"`
 	Created int64     `json:"created"`
 	Model   string    `json:"model"`
@@ -175,7 +164,7 @@ func ask(ctx context.Context, auth string, org string, prompt string, verbose bo
 		ghc.WithTimeout(DefaultTimeout),
 	}
 
-	if dbg {
+	if verbose || dbg {
 		fmt.Printf("ClientOption: %+v\n", opts)
 	}
 
@@ -188,13 +177,13 @@ func ask(ctx context.Context, auth string, org string, prompt string, verbose bo
 		Temperature: DefaultTemperature,
 	}
 
-	if dbg {
+	if verbose || dbg {
 		fmt.Printf("postRequestBody: %+v\n", postRequestBody)
 	}
 
 	requestBody, err := json.Marshal(postRequestBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error - Marshal body: %w", err)
 	}
 
 	reqOpts := []ghc.Option{
@@ -208,26 +197,26 @@ func ask(ctx context.Context, auth string, org string, prompt string, verbose bo
 		reqOpts = append(reqOpts, ghc.WithHeader("OpenAI-Organization", org))
 	}
 
-	if dbg {
+	if verbose || dbg {
 		fmt.Printf("[]Option: %+v\n", reqOpts)
 	}
 
 	response, err := client.Post(ctx, "/v1/completions", reqOpts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error - HTTP Request: %w", err)
 	}
 
 	var postResponseBody PostResponseBody
 	if err := response.Unmarshal(&postResponseBody); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error - Unmarshal body: %w", err)
 	}
 
-	if dbg {
+	if verbose || dbg {
 		fmt.Printf("postResponseBody: %+v\n", postResponseBody)
 	}
 
 	if !response.Ok() {
-		if dbg {
+		if verbose || dbg {
 			fmt.Printf("Response: %+v\n", response)
 		}
 

@@ -10,6 +10,9 @@ on:
 
   pull_request:
 
+# Don't grant any access by default
+permissions: {}
+
 env:
   target_ref: ${{ github.head_ref || github.ref_name }}
   GO111MODULE: on
@@ -23,6 +26,14 @@ jobs:
         os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
+
+    ############################################
+    # Grant status permission for MULTI_STATUS #
+    ############################################
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
 
     steps:
       - name: actions/checkout

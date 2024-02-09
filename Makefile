@@ -13,6 +13,7 @@ GOFLAGS = -a
 LDFLAGS = -s -w -X '$(GIT_REPO)/internal/version.AppVersion=$(APP_VERSION)' -X '$(GIT_REPO)/internal/version.Branch=$(BRANCH)' -X '$(GIT_REPO)/internal/version.BuildTime=$(BUILD_TS)' -X '$(GIT_REPO)/internal/version.Commit=$(COMMIT)' -X '$(GIT_REPO)/internal/version.GoVersion=$(GO_VERSION)'
 #GOCMD = GOPRIVATE='' ; CGO_ENABLED='0' ; GO111MODULE='on' ; go
 GOCMD = GOPRIVATE='' ; GO111MODULE='on' ; go
+GOENV = go env
 
 LINTER_REPORT = $(BUILD_DIR)/golangci-lint-$(BUILD_TS).out
 COVERAGE_REPORT = $(BUILD_DIR)/unit-test-coverage-$(BUILD_TS)
@@ -59,7 +60,7 @@ endif
 prebuild: init $(BUILD_DIR)
 	@echo "Running go mod tidy & vendor"
 	go version
-	go env
+	$(GOENV)
 	$(GOCMD) mod tidy && $(GOCMD) mod vendor
 
 .PHONY: golangcilint
@@ -68,29 +69,26 @@ golangcilint: init $(BUILD_DIR)
 	${GOPATH}/bin/golangci-lint --version
 	${GOPATH}/bin/golangci-lint run --verbose --config .github/linters/.golangci.yml \
 	  --issues-exit-code 0 --out-format=checkstyle > "$(LINTER_REPORT)"
-#	cat $(LINTER_REPORT)
+	cat $(LINTER_REPORT)
 
 .PHONY: lint
 lint: init golangcilint
 
 .PHONY: unittest
 unittest: init $(BUILD_DIR)
-	$(GOCMD) test -coverprofile="$(COVERAGE_REPORT).gcov" ./... && gcov2lcov -infile "$(COVERAGE_REPORT).gcov" -outfile "$(COVERAGE_REPORT).lcov"
+	$(GOENV)
+	$(GOCMD) test -race -coverprofile="$(COVERAGE_REPORT).gcov" -covermode=atomic ./...
+#	cat "$(COVERAGE_REPORT).gcov"
+	gcov2lcov -infile "$(COVERAGE_REPORT).gcov" -outfile "$(COVERAGE_REPORT).lcov"
+#	cat "$(COVERAGE_REPORT).lcov"
 	$(GOCMD) tool cover -func="$(COVERAGE_REPORT).gcov"
 #	$(GOCMD) tool cover -html="$(COVERAGE_REPORT).gcov"
-#	gcov2lcov -infile "$(COVERAGE_REPORT).gcov" -outfile "$(COVERAGE_REPORT).lcov"
-#	cat "$(COVERAGE_REPORT).gcov"
-#	cat "$(COVERAGE_REPORT).lcov"
 
-.PHONY: racetest
-racetest:
-	$(GOCMD) test -race ./...
-
-.PHONY: test
-test: unittest racetest
+.PHONY: tests
+tests: unittest
 
 .PHONY: build
-build: prebuild
+build: prebuild lint tests
 	$(GOCMD) build $(GOFLAGS) -ldflags="$(LDFLAGS)" -o $(BUILD_DIR)/$(APP_NAME) cmd/$(APP_NAME)/main.go
 
 .PHONY: debug
@@ -101,7 +99,7 @@ debug: clean build
 release: clean build
 
 .PHONY: all
-all: clean lint test build debug release
+all: clean lint tests build debug release
 
 .PHONY: pre-commit
 pre-commit: init
@@ -119,7 +117,7 @@ usage:
 	@echo "  installdep - install latest build app dependancies (ie: golangci-lint, gcov2lcov)"
 	@echo "  lint - run all linter checks"
 	@echo "  release - build release version of binary"
-	@echo "  test - run all tests"
+	@echo "  tests - run all tests"
 	@echo "  usage - show this information"
 
 .PHONY: help

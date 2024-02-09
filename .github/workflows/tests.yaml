@@ -24,7 +24,7 @@ jobs:
     name: Tests
     strategy:
       matrix:
-        go-version: [1.21.x]
+        go-version: ['oldstable', 'stable']
         os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
@@ -44,13 +44,17 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: go version
-        run: go version
+        run: |
+          go version
+          go env
 
       - name: go mod tidy
-        run: go mod tidy
+        run: |
+          go mod tidy
 
-      - name: go clean
-        run: go clean --cache
+      - name: go clean --cache
+        run: |
+          go clean --cache
 
       - name: go test
         run: |
