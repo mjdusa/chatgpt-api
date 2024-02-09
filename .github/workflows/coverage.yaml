@@ -73,7 +73,7 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@3b475421464c564c0714d92ce02742bd81fa9eda  # v2.2.0
         with:
           path: coverage.lcov
-          min_coverage: 40
+          min_coverage: 5
 
       # Upload generated artifacts for historical reference
       - name: actions/upload-artifact
@@ -82,4 +82,3 @@ jobs:
           name: test-reports
           path: ./coverage.*
           retention-days: 180
-

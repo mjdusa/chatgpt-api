@@ -11,7 +11,7 @@ Please see our [Contributing](./CONTRIBUTING.md) for how to contribute to the pr
 
 ## Setting up for development
 
-1. Clone Repo
+1. Clone repository
 git clone <LINK>
 
 2. Setup Pre-commit Hooks
@@ -43,8 +43,8 @@ pre-commit install --install-hooks
 pre-commit run --all-files
 ```
 
-## Running...
-```
+## Running
+```bash
 make release
 ...
 ./dist/chatgpt-api
