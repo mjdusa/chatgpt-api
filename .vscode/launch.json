@@ -13,7 +13,7 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "args": ["-auth=abc"],
-            "showLog": true,
+            "showLog": true
         },
         {
             "name": "Debug chatgpt-api in verbose",
@@ -24,7 +24,7 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "args": ["-auth=abc", "-debug", "-verbose"],
-            "showLog": true,
+            "showLog": true
         },
         {
             "name": "Run chatgpt-api in verbose",
@@ -35,7 +35,7 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "args": ["-auth=abc", "-verbose"],
-            "showLog": true,
+            "showLog": true
         }
     ]
 }
