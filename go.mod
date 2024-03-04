@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	github.com/bozd4g/go-http-client v1.0.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
