@@ -5,12 +5,12 @@ import (
 	"os"
 	"testing"
 
-	put "github.com/mjdusa/chatgpt-api/internal/version" // put - package under test
+	put "github.com/mjdusa/chatgpt-api/internal/version" // put - package under test.
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
-// Setup Suite
+// Setup Suite.
 type VersionSuite struct {
 	suite.Suite
 }
@@ -29,7 +29,7 @@ type testGetVersion struct {
 	Expected    string
 }
 
-func get_testGetVersion_data() []testGetVersion {
+func getTestGetVersionData() []testGetVersion {
 	tests := []testGetVersion{
 		{
 			Description: "All are empty strings",
@@ -52,8 +52,8 @@ func get_testGetVersion_data() []testGetVersion {
 	return tests
 }
 
-func (s *VersionSuite) Test_GetVersion() {
-	for _, tst := range get_testGetVersion_data() {
+func (s *VersionSuite) TestGetVersion() {
+	for _, tst := range getTestGetVersionData() {
 		expected := fmt.Sprintf(
 			"%s version: [%s]\n- Branch:     [%s]\n- Build Time: [%s]\n- Commit:     [%s]\n- Go Version: [%s]\n",
 			os.Args[0], tst.AppVersion, tst.Branch, tst.BuildTime, tst.Commit, tst.GoVersion)

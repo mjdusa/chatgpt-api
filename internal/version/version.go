@@ -7,19 +7,19 @@ import (
 
 var (
 	// AppVersion contains the current version in SemVer format.
-	AppVersion string //nolint:gochecknoglobals  // only used on main for usage
+	AppVersion string //nolint:gochecknoglobals  // only used on main for usage.
 
 	// Branch is the name of the branch referenced by HEAD.
-	Branch string //nolint:gochecknoglobals  // only used on main for usage
+	Branch string //nolint:gochecknoglobals  // only used on main for usage.
 
 	// BuildTime is the compiled build time.
-	BuildTime string //nolint:gochecknoglobals  // only used on main for usage
+	BuildTime string //nolint:gochecknoglobals  // only used on main for usage.
 
 	// Commit contains the hash of the latest commit on Branch.
-	Commit string //nolint:gochecknoglobals  // only used on main for usage
+	Commit string //nolint:gochecknoglobals  // only used on main for usage.
 
 	// GoVersion contains the the version of the go that performed the build.
-	GoVersion string //nolint:gochecknoglobals  // only used on main for usage
+	GoVersion string //nolint:gochecknoglobals  // only used on main for usage.
 )
 
 func GetVersion() string {
