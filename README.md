@@ -12,7 +12,9 @@ Please see our [Contributing](./CONTRIBUTING.md) for how to contribute to the pr
 ## Setting up for development
 
 1. Clone repository
-git clone <LINK>
+```bash
+git clone <URL>
+```
 
 2. Setup Pre-commit Hooks
 When you clone this repository to your workstation, make sure to install the [pre-commit](https://pre-commit.com/) hooks. [GitHub Repository](https://github.com/pre-commit/pre-commit)
@@ -33,7 +35,7 @@ pre-commit 3.3.2
 pre-commit autoupdate
 ```
 
-* Install pre-commit into the local git.
+* Install pre-commit into the local Git config.
 ```bash
 pre-commit install --install-hooks
 ```
